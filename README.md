@@ -1,6 +1,6 @@
 # redislock
 
-redislock is a Distributed lock implementation based on Redis
+redislock is a distributed lock implementation based on redis
 
 ## usage
 ```go
