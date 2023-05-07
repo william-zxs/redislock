@@ -9,12 +9,11 @@ import (
 )
 
 func getRedisLock() *RedisLock {
-	c := redis.NewClient(&redis.Options{
+	return NewRedisLock(redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
-		Password: "william", // 没有密码，默认值
-		DB:       0,         // 默认DB 0
-	})
-	return NewRedisLock(c)
+		Password: "william",
+		DB:       0,
+	}))
 }
 
 func workLock(wg *sync.WaitGroup, lock *RedisLock) {
