@@ -15,7 +15,7 @@ redislock := NewRedisLock(redis.NewClient(&redis.Options{
 uuid,err := redislock.Lock("helloworld")
 //do something
 // unlock
-redislock.Unlock("william",uuid)
+redislock.Unlock("helloworld",uuid)
 
 ```
 
