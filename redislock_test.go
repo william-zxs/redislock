@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func getRedisLock() *RedisLock {
+func getRedisLock() Lockbox {
 	return NewRedisLock(redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
 		Password: "william",
@@ -16,96 +16,74 @@ func getRedisLock() *RedisLock {
 	}))
 }
 
-func workLock(wg *sync.WaitGroup, lock *RedisLock) {
+func workLock(wg *sync.WaitGroup, lock Lock) {
 	defer wg.Done()
-	uuid, err := lock.Lock("william")
+	err := lock.Lock()
 	if err != nil {
 		panic(err)
 	}
-	if uuid != "" {
-		fmt.Println("==get lock==", uuid)
-		time.Sleep(time.Second * 1)
-	} else {
-		fmt.Println("==not get lock==", uuid)
-	}
-	res, err := lock.Unlock("william", uuid)
+	time.Sleep(time.Millisecond * 100)
+	err = lock.Unlock()
 	if err != nil {
 		panic(err)
 	}
-	if res {
-		fmt.Println("==unlock==", uuid)
-	} else {
-		fmt.Println("==not unlock==", uuid)
-	}
-
 }
 
-func workTryLock(wg *sync.WaitGroup, lock *RedisLock) {
+func workTryLock(wg *sync.WaitGroup, lock Lock) {
 	defer wg.Done()
-	res, uuid, err := lock.TryLock("william")
+	res, err := lock.TryLock()
 	if err != nil {
 		panic(err)
 	}
 	if res {
-		fmt.Println("==get lock==", uuid)
+		fmt.Println("==get lock==!!!!")
 		time.Sleep(time.Second * 1)
 	} else {
-		fmt.Println("==not get lock==", uuid)
+		fmt.Println("==not get lock==")
 	}
-	res, err = lock.Unlock("william", uuid)
+	err = lock.Unlock()
 	if err != nil {
 		panic(err)
 	}
-	if res {
-		fmt.Println("==unlock==", uuid)
-	} else {
-		fmt.Println("==not unlock==", uuid)
-	}
-
 }
 
 func TestRedisLock_Lock(t *testing.T) {
 	redislock := getRedisLock()
-
-	var a sync.Mutex
-	a.TryLock()
-
+	l := redislock.GetLock("william")
 	var wg sync.WaitGroup
 	for i := 0; i < 10; i++ {
 		wg.Add(1)
-		go workLock(&wg, redislock)
+		go workLock(&wg, l)
 	}
 	wg.Wait()
 }
 
 func TestRedisLock_TryLock(t *testing.T) {
 	redislock := getRedisLock()
-
-	var a sync.Mutex
-	a.TryLock()
-
+	l := redislock.GetLock("william")
 	var wg sync.WaitGroup
 	for i := 0; i < 100; i++ {
 		wg.Add(1)
-		go workTryLock(&wg, redislock)
+		go workTryLock(&wg, l)
 	}
 	wg.Wait()
 }
 
 func BenchmarkRedisLock_Lock(b *testing.B) {
 	redislock := getRedisLock()
+	l := redislock.GetLock("william")
 	count := 0
 	var wg sync.WaitGroup
 	for i := 0; i < b.N; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			uuid, err := redislock.Lock("william")
+			err := l.Lock()
 			if err != nil {
 				panic(err)
 			}
 			count += 1
-			redislock.Unlock("william", uuid)
+			l.Unlock()
 		}()
 
 	}
