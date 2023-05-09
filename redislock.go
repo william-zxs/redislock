@@ -111,9 +111,11 @@ func (r *redisLock) Unlock() error {
     		return 0
 		end
 		`)
-	err := unlock.Run(ctx, r.c, []string{r.key}, r.uuid).Err()
-	//停掉watch dog
-	r.cancel()
+	res, err := unlock.Run(ctx, r.c, []string{r.key}, r.uuid).Result()
+	if res.(int64) == 1 {
+		//停掉watch dog
+		r.cancel()
+	}
 	return err
 
 }

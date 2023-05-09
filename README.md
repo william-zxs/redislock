@@ -21,6 +21,8 @@ redislock.Unlock("helloworld",uuid)
 
 
 
+每一个goroutine应该重新初始化
+
 ## todo
 2. 效率更好的自旋实现（公平锁、非公平锁）
 3. 重入锁

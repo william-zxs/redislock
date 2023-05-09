@@ -37,7 +37,7 @@ func workTryLock(wg *sync.WaitGroup, lock Lock) {
 	}
 	if res {
 		fmt.Println("==get lock==!!!!")
-		time.Sleep(time.Second * 1)
+		time.Sleep(time.Second * 5)
 	} else {
 		fmt.Println("==not get lock==")
 	}
